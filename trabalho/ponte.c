@@ -6,7 +6,7 @@
 #include <pthread.h>
 
 #define TAMANHO 50
-#define CARROS_POR_MINUTO 30 // 30-60-90 veículos por minuto
+#define CARROS_POR_MINUTO 90 // 30-60-90 veículos por minuto
 
 pthread_mutex_t mutex;
 
@@ -33,13 +33,7 @@ void *processo(void *args) {
 int main(void) {
     // inicia gerador de numeros aleatorios
     srand(time(NULL));
-
-
-	// variáveis locais
-	pthread_t idA, idB, idC, idD, idE, idF;
     
-	// variáveis locais
-	pthread_t idA, idB, idC, idD, idE, idF;
     CARRO *carros = NULL;
 
     // alocação de memória para os parâmetros
@@ -68,11 +62,8 @@ int main(void) {
             }
         }
     }
-
-    // destroi o mutex
+    
     pthread_mutex_destroy(&mutex);
-
-    // libera memoria
     free(carros);
 
     return 0;
