@@ -6,7 +6,9 @@
 #include <pthread.h>
 
 #define TAMANHO 50
-#define CARROS_POR_MINUTO 90 // 30-60-90 veículos por minuto
+#define CARROS_POR_MINUTO 190 // 30-60-90 veículos por minuto
+#define TRUE 1
+#define FALSE 0
 
 pthread_mutex_t mutex;
 
@@ -14,6 +16,7 @@ pthread_mutex_t mutex;
 struct carro {
     int id;
     int prioridade;
+    int atravessou_ponte;
     pthread_t thread;
 };
 typedef struct carro CARRO;
@@ -46,20 +49,43 @@ int main(void) {
     for (int i = 0; i < TAMANHO; i++) {
         carros[i].id = i + 1;
         carros[i].prioridade = (rand() % 5) + 1;
+        carros[i].atravessou_ponte = FALSE;
     }
     
     // Executa a funcao de acordo com a prioridade
+    int sinaleira = 0;
     for (int prio = 1; prio <= 5; prio++) {
         for (int i = 0; i < TAMANHO; i++) {
             if (carros[i].prioridade == prio) {
+                carros[i].atravessou_ponte = TRUE;
                 pthread_create(&carros[i].thread, NULL, processo, (void *)&carros[i]);
             }
-        }
-        // faz o join para verifica que todas as threads de um mesmo nivel finalizaram antes de passar para o proximo
-        for (int i = 0; i < TAMANHO; i++) {
-            if (carros[i].prioridade == prio) {
-                pthread_join(carros[i].thread, NULL);
+
+            sinaleira =  (rand() % 100) + 1;
+            if (sinaleira == 7) {
+                // faz o join para garatir que todos os processos acabaram antes de parar
+                for (int i = 0; i < TAMANHO; i++) {
+                    if (carros[i].atravessou_ponte == TRUE) {
+                        pthread_join(carros[i].thread, NULL);
+                    }
+                }
+
+                printf("\nSinaleira Fechada!\nCarros Aguardando Sinaleira:\n");
+                for (int i = 0; i < TAMANHO; i++) {
+                    if (carros[i].atravessou_ponte == FALSE) {
+                        printf("\t*(Carro = %i - Prior = %i)\n", carros[i].id, carros[i].prioridade);
+                    }
+                }
+                sleep(10);
+                printf("\nSinaleira Aberta!\n");
             }
+        }
+    }
+
+    // faz o join final para verifica que todos os processos acabaram
+    for (int i = 0; i < TAMANHO; i++) {
+        if (carros[i].atravessou_ponte == TRUE) {
+            pthread_join(carros[i].thread, NULL);
         }
     }
     
