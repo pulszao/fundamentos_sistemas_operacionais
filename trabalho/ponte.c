@@ -81,7 +81,7 @@ int main(void) {
                 pthread_create(&carros2[i].thread, NULL, ponte2, (void *)&carros2[i]);
             }
 
-            sinaleira =  (rand() % 100) + 1;
+            sinaleira =  (rand() % (TAMANHO * 3)) + 1;
             if (sinaleira == 7) {
                 // faz o join para garantir que todos os pontes acabaram antes de parar
                 for (int i = 0; i < TAMANHO; i++) {
@@ -97,13 +97,13 @@ int main(void) {
                 printf("PONTE 1\n");
                 for (int i = 0; i < TAMANHO; i++) {
                     if (carros[i].atravessou_ponte == FALSE) {
-                        printf("\t*(Carro = %i - Prior = %i)\n", carros[i].id, carros[i].prioridade);
+                        printf("\t*(Carro = %i - Prioridade = %i)\n", carros[i].id, carros[i].prioridade);
                     }
                 }
                 printf("PONTE 2\n");
                 for (int i = 0; i < TAMANHO; i++) {
                     if (carros2[i].atravessou_ponte == FALSE) {
-                        printf("\t*(Carro = %i - Prior = %i)\n", carros2[i].id, carros2[i].prioridade);
+                        printf("\t*(Carro = %i - Prioridade = %i)\n", carros2[i].id, carros2[i].prioridade);
                     }
                 }
                 sleep(10);
