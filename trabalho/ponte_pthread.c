@@ -26,7 +26,7 @@ void *ponte(void *args) {
     CARRO *carro = (CARRO *)args;
     // exclusao mutua
     pthread_mutex_lock(&mutex);
-    printf("PONTE 1\tCarro = %i\t Prioridade = %i\t Thread = %lu\n", carro->id, carro->prioridade, pthread_self());
+    printf("PONTE 1\tCarro = %i\t Prioridade = %i\t Thread = %lu\n", carro->id, carro->prioridade, (unsigned long)pthread_self());
     usleep(60000000 / CARROS_POR_MINUTO); // delay para limitar velocidade de carros que passam na ponte
     pthread_mutex_unlock(&mutex);
     return NULL;
@@ -35,7 +35,7 @@ void *ponte2(void *args) {
     CARRO *carro2 = (CARRO *)args;
     // exclusao mutua
     pthread_mutex_lock(&mutex2);
-    printf("PONTE 2\tCarro2 = %i\t Prioridade = %i\t Thread = %lu\n", carro2->id, carro2->prioridade, pthread_self());
+    printf("PONTE 2\tCarro2 = %i\t Prioridade = %i\t Thread = %lu\n", carro2->id, carro2->prioridade, (unsigned long)pthread_self());
     usleep(60000000 / CARROS_POR_MINUTO); // delay para limitar velocidade de carros que passam na ponte
     pthread_mutex_unlock(&mutex2);
     return NULL;
