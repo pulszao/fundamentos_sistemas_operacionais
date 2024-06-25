@@ -29,11 +29,11 @@ void ponte(CARRO *carro, sem_t *semaforo) {
     sem_post(semaforo); // libera semaforo
 }
 
-void ponte2(CARRO *carro2, sem_t *semaforo) {
-    sem_wait(semaforo); // trava semaforo
+void ponte2(CARRO *carro2, sem_t *semaforo2) {
+    sem_wait(semaforo2); // trava semaforo
     printf("PONTE 2\tCarro2 = %i\t Prioridade = %i\t Processo = %d\n", carro2->id, carro2->prioridade, getpid());
     usleep(60000000 / CARROS_POR_MINUTO); // delay para limitar velocidade de carros que passam na ponte
-    sem_post(semaforo); // libera semaforo
+    sem_post(semaforo2); // libera semaforo
 }
 
 int main(void) {
@@ -50,8 +50,9 @@ int main(void) {
     shmid2 = shmget(IPC_PRIVATE, TAMANHO * sizeof(CARRO), IPC_CREAT | 0600);
     carros2 = (CARRO *)shmat(shmid2, NULL, 0);
 
-    // Criação do semáforo
-    sem_t *semaforo = sem_open("/semaforo_ponte", O_CREAT, 0600, 1);
+    // Criação dos semáforos
+    sem_t *semaforo = sem_open("/semaforo_ponte1", O_CREAT, 0600, 1);
+    sem_t *semaforo2 = sem_open("/semaforo_ponte2", O_CREAT, 0600, 1);
 
     // Criando carros com suas prioridades
     for (int i = 0; i < TAMANHO; i++) {
@@ -73,14 +74,16 @@ int main(void) {
                     ponte(&carros[i], semaforo);
                     carros[i].atravessou_ponte = TRUE;
                     shmdt(carros);
+                    exit(0);
                 }
             }
             if (carros2[i].prioridade == prio && carros2[i].atravessou_ponte == FALSE) {
                 carros2[i].pid = fork();
                 if (carros2[i].pid == 0) {
-                    ponte2(&carros2[i], semaforo);
+                    ponte2(&carros2[i], semaforo2);
                     carros2[i].atravessou_ponte = TRUE;
                     shmdt(carros2);
+                    exit(0);
                 }
             }
         }
@@ -96,14 +99,16 @@ int main(void) {
         }
     }
 
-    // Liberação da memória compartilhada e do semáforo
+    // Liberação da memória compartilhada e dos semáforos
     shmdt(carros);
     shmctl(shmid, IPC_RMID, NULL);
     shmdt(carros2);
     shmctl(shmid2, IPC_RMID, NULL);
 
     sem_close(semaforo);
-    sem_unlink("/semaforo_ponte");
+    sem_unlink("/semaforo_ponte1");
+    sem_close(semaforo2);
+    sem_unlink("/semaforo_ponte2");
 
     return 0;
 }
