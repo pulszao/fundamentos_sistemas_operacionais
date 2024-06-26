@@ -67,12 +67,27 @@ int main(void) {
 
     // Executa a função de acordo com a prioridade
     for (int prio = 1; prio <= 5; prio++) {
+        if(prio == 3) {
+            printf("FECHOU, aguarde 10s...\n");
+            for (int i = 0; i < TAMANHO; i++) {
+                if (carros[i].atravessou_ponte == TRUE) {
+                    waitpid(carros[i].pid, NULL, 0);
+                }
+                if (carros2[i].atravessou_ponte == TRUE) {
+                    waitpid(carros2[i].pid, NULL, 0);
+                }
+            }
+            sem_wait(semaforo);
+            sem_wait(semaforo2);
+            sleep(10);
+            sem_post(semaforo);
+            sem_post(semaforo2);
+        }
         for (int i = 0; i < TAMANHO; i++) {
             if (carros[i].prioridade == prio && carros[i].atravessou_ponte == FALSE) {
                 carros[i].pid = fork();
                 if (carros[i].pid == 0) {
                     ponte(&carros[i], semaforo);
-                    carros[i].atravessou_ponte = TRUE;
                     shmdt(carros);
                     exit(0);
                 }
@@ -81,21 +96,20 @@ int main(void) {
                 carros2[i].pid = fork();
                 if (carros2[i].pid == 0) {
                     ponte2(&carros2[i], semaforo2);
-                    carros2[i].atravessou_ponte = TRUE;
                     shmdt(carros2);
                     exit(0);
                 }
             }
         }
-    }
 
-    // Faz o wait final para verificar que todos os processos acabaram
-    for (int i = 0; i < TAMANHO; i++) {
-        if (carros[i].atravessou_ponte == TRUE) {
-            waitpid(carros[i].pid, NULL, 0);
-        }
-        if (carros2[i].atravessou_ponte == TRUE) {
-            waitpid(carros2[i].pid, NULL, 0);
+        // Faz o wait para verificar que todos os processos da prioridade atual acabaram
+        for (int i = 0; i < TAMANHO; i++) {
+            if (carros[i].prioridade == prio && carros[i].atravessou_ponte == FALSE) {
+                waitpid(carros[i].pid, NULL, 0);
+            }
+            if (carros2[i].prioridade == prio && carros2[i].atravessou_ponte == FALSE) {
+                waitpid(carros2[i].pid, NULL, 0);
+            }
         }
     }
 
